@@ -56,11 +56,31 @@ function love.update(dt)
     elseif love.keyboard.isDown('down') then
         player2Y = math.min(VIRTUAL_HEIGHT - 20, player2Y + PADDLE_SPEED * dt)
     end
+
+    -- ball movement
+    if gameState == 'play' then
+        ballX = ballX + ballDX * dt
+        ballY = ballY + ballDY * dt
+    end
 end
 
 function love.keypressed(key)
     if key == 'escape' then
         love.event.quit()
+    elseif key == 'enter' or key == 'return' then
+        if gameState == 'start' then
+            gameState = 'play'
+        else
+            gameState = 'start'
+
+            -- reset ball position
+            ballX = VIRTUAL_WIDTH / 2 - 2
+            ballY = VIRTUAL_HEIGHT / 2 - 2
+
+            -- ball velocity
+            ballDX = math.random(2) == 1 and 100 or -100
+            ballDY = math.random(-50, 50) * 1.5
+        end
     end
 end
 
@@ -70,7 +90,11 @@ function love.draw()
     love.graphics.clear(40 / 255, 45 / 255, 52 / 255, 255 / 255)
 
     love.graphics.setFont(retroFont)
-    love.graphics.printf('Love2d Pong', 0, 20, VIRTUAL_WIDTH, 'center')
+    if gameState == 'start' then
+        love.graphics.printf('Love2d Pong - Press enter to start!', 0, 20, VIRTUAL_WIDTH, 'center')
+    else
+        love.graphics.printf('Love2d Pong', 0, 20, VIRTUAL_WIDTH, 'center')
+    end
 
     love.graphics.setFont(scoreRetroFont)
     love.graphics.print(tostring(player1Score), VIRTUAL_WIDTH / 2 - 50, VIRTUAL_HEIGHT / 3)
@@ -83,7 +107,7 @@ function love.draw()
     love.graphics.rectangle('fill', VIRTUAL_WIDTH - 15, player2Y, 5, 20)
 
     -- ball
-    love.graphics.rectangle('fill', VIRTUAL_WIDTH / 2 - 2, VIRTUAL_HEIGHT / 2 - 2, 4, 4)
+    love.graphics.rectangle('fill', ballX, ballY, 4, 4)
 
     push:apply('end')
 end
