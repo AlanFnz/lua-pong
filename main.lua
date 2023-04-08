@@ -11,9 +11,11 @@ PADDLE_SPEED = 200
 
 function love.load()
     love.graphics.setDefaultFilter('nearest', 'nearest')
+
+    math.randomseed(os.time())
+
     retroFont = love.graphics.newFont('retro.ttf', 8)
     scoreRetroFont = love.graphics.newFont('retro.ttf', 32)
-    love.graphics.setFont(retroFont)
 
     push:setupScreen(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT, {
         fullscreen = false,
@@ -28,6 +30,16 @@ function love.load()
     -- init paddle positions
     player1Y = 30
     player2Y = VIRTUAL_HEIGHT - 30
+
+    -- init ball
+    ballX = VIRTUAL_WIDTH / 2 -2
+    ballY = VIRTUAL_HEIGHT / 2 - 2
+
+    -- ball velocity
+    ballDX = math.random(2) == 1 and 100 or -100
+    ballDY = math.random(-50, 50)
+
+    gameState = 'start'
 end
 
 function love.update(dt)
