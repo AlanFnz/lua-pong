@@ -1,5 +1,8 @@
 -- using push for virtual resolution
 push = require 'push'
+Class = require 'class'
+require 'Paddle'
+require 'Ball'
 
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
@@ -10,6 +13,7 @@ VIRTUAL_HEIGHT = 243
 PADDLE_SPEED = 200
 
 function love.load()
+    love.window.setTitle("Love2d Pong")
     love.graphics.setDefaultFilter('nearest', 'nearest')
 
     math.randomseed(os.time())
@@ -27,17 +31,12 @@ function love.load()
     player1Score = 0
     player2Score = 0
 
-    -- init paddle positions
-    player1Y = 30
-    player2Y = VIRTUAL_HEIGHT - 30
+    -- init players
+    player1 = Paddle(10, 30, 5, 20)
+    player2 = Paddle(VIRTUAL_WIDTH - 15, VIRTUAL_HEIGHT - 30, 5, 20)
 
     -- init ball
-    ballX = VIRTUAL_WIDTH / 2 - 2
-    ballY = VIRTUAL_HEIGHT / 2 - 2
-
-    -- ball velocity
-    ballDX = math.random(2) == 1 and 100 or -100
-    ballDY = math.random(-50, 50)
+    ball = Ball(VIRTUAL_WIDTH / 2 - 2, VIRTUAL_HEIGHT / 2 - 2, 4, 4)
 
     gameState = 'start'
 end
@@ -45,23 +44,29 @@ end
 function love.update(dt)
     -- player 1 movement
     if love.keyboard.isDown('w') then
-        player1Y = math.max(0, player1Y + -PADDLE_SPEED * dt)
+        player1.dy = -PADDLE_SPEED
     elseif love.keyboard.isDown('s') then
-        player1Y = math.min(VIRTUAL_HEIGHT - 20, player1Y + PADDLE_SPEED * dt)
+        player1.dy = PADDLE_SPEED
+    else
+        player1.dy = 0
     end
 
     -- player 2 movement
     if love.keyboard.isDown('up') then
-        player2Y = math.max(0, player2Y + -PADDLE_SPEED * dt)
+        player2.dy = -PADDLE_SPEED
     elseif love.keyboard.isDown('down') then
-        player2Y = math.min(VIRTUAL_HEIGHT - 20, player2Y + PADDLE_SPEED * dt)
+        player2.dy = PADDLE_SPEED
+    else
+        player2.dy = 0
     end
 
     -- ball movement
     if gameState == 'play' then
-        ballX = ballX + ballDX * dt
-        ballY = ballY + ballDY * dt
+        ball:update(dt)
     end
+
+    player1:update(dt)
+    player2:update(dt)
 end
 
 function love.keypressed(key)
@@ -73,13 +78,8 @@ function love.keypressed(key)
         else
             gameState = 'start'
 
-            -- reset ball position
-            ballX = VIRTUAL_WIDTH / 2 - 2
-            ballY = VIRTUAL_HEIGHT / 2 - 2
-
-            -- ball velocity
-            ballDX = math.random(2) == 1 and 100 or -100
-            ballDY = math.random(-50, 50) * 1.5
+            -- reset ball position and velocity
+            ball:reset()
         end
     end
 end
@@ -100,14 +100,21 @@ function love.draw()
     love.graphics.print(tostring(player1Score), VIRTUAL_WIDTH / 2 - 50, VIRTUAL_HEIGHT / 3)
     love.graphics.print(tostring(player1Score), VIRTUAL_WIDTH / 2 + 30, VIRTUAL_HEIGHT / 3)
 
-    -- first paddle
-    love.graphics.rectangle('fill', 10, player1Y, 5, 20)
+    -- render paddles, now using their class's render method
+    player1:render()
+    player2:render()
 
-    -- second paddle
-    love.graphics.rectangle('fill', VIRTUAL_WIDTH - 15, player2Y, 5, 20)
+    -- render ball using its class's render method
+    ball:render()
 
-    -- ball
-    love.graphics.rectangle('fill', ballX, ballY, 4, 4)
+    -- diplay fps
+    displayFPS()
 
     push:apply('end')
+end
+
+function displayFPS()
+    love.graphics.setFont(retroFont)
+    love.graphics.setColor(0, 255, 0, 255)
+    love.graphics.print('FPS: ' .. tostring(love.timer.getFPS()), 10, 10)
 end
