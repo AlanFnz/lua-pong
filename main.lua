@@ -13,7 +13,7 @@ VIRTUAL_HEIGHT = 243
 PADDLE_SPEED = 200
 
 function love.load()
-    love.window.setTitle("Love2d Pong")
+    love.window.setTitle('Love2d Pong')
     love.graphics.setDefaultFilter('nearest', 'nearest')
 
     math.randomseed(os.time())
@@ -42,29 +42,37 @@ function love.load()
 end
 
 function love.update(dt)
-    if gameState == 'play' then
+    -- serving
+    if gameState == 'serve' then
+        ball.dy = math.random(-50, 50)
+        if servingPlayer == 1 then
+            ball.dx = math.random(140, 200)
+        else
+            ball.dx = -math.random(140, 200)
+        end
+    elseif gameState == 'play' then
         -- collisions
         -- with paddles
         if ball:collides(player1) then
             ball.dx = -ball.dx * 1.03
             ball.x = player1.x + 5
-        
+
             if ball.dy < 0 then
                 ball.dy = -math.random(10, 150)
             else
                 ball.dy = math.random(10, 150)
-            end 
+            end
         end
 
         if ball:collides(player2) then
             ball.dx = -ball.dx * 1.03
-            ball.x = player2.x + - 4
+            ball.x = player2.x + -4
 
             if ball.dy < 0 then
                 ball.dy = -math.random(10, 150)
             else
                 ball.dy = math.random(10, 150)
-            end 
+            end
         end
 
         -- with edges of the screen (top and bottom)
@@ -83,14 +91,14 @@ function love.update(dt)
             servingPlayer = 1
             player2Score = player2Score + 1
             ball:reset()
-            gameState = "serve"
+            gameState = 'serve'
         end
 
         if ball.x > VIRTUAL_WIDTH then
             servingPlayer = 2
             player1Score = player1Score + 1
             ball:reset()
-            gameState = "serve"
+            gameState = 'serve'
         end
     end
 
@@ -127,6 +135,8 @@ function love.keypressed(key)
     elseif key == 'enter' or key == 'return' then
         if gameState == 'start' then
             gameState = 'play'
+        elseif gameState == 'serve' then
+            gameState = 'play'
         else
             gameState = 'start'
 
@@ -144,13 +154,18 @@ function love.draw()
     love.graphics.setFont(retroFont)
     if gameState == 'start' then
         love.graphics.printf('Love2d Pong - Press enter to start!', 0, 20, VIRTUAL_WIDTH, 'center')
-    else
-        love.graphics.printf('Love2d Pong', 0, 20, VIRTUAL_WIDTH, 'center')
+    elseif gameState == 'serve' then
+        love.graphics.setFont(retroFont)
+        love.graphics.printf('Player ' .. tostring(servingPlayer) .. "'s serve!", 
+            0, 10, VIRTUAL_WIDTH, 'center')
+        love.graphics.printf('Press Enter to serve!', 0, 20, VIRTUAL_WIDTH, 'center')
+    elseif gameState == 'play' then
+        -- no message on play state
     end
 
     love.graphics.setFont(scoreRetroFont)
     love.graphics.print(tostring(player1Score), VIRTUAL_WIDTH / 2 - 50, VIRTUAL_HEIGHT / 3)
-    love.graphics.print(tostring(player1Score), VIRTUAL_WIDTH / 2 + 30, VIRTUAL_HEIGHT / 3)
+    love.graphics.print(tostring(player2Score), VIRTUAL_WIDTH / 2 + 30, VIRTUAL_HEIGHT / 3)
 
     -- render paddles, now using their class's render method
     player1:render()
