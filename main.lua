@@ -42,8 +42,8 @@ function love.load()
 end
 
 function love.update(dt)
-    -- collisions
     if gameState == 'play' then
+        -- collisions
         -- with paddles
         if ball:collides(player1) then
             ball.dx = -ball.dx * 1.03
@@ -76,6 +76,21 @@ function love.update(dt)
         if ball.y >= VIRTUAL_HEIGHT - 4 then
             ball.y = VIRTUAL_HEIGHT - 4
             ball.dy = -ball.dy
+        end
+
+        -- scoring
+        if ball.x < 0 then
+            servingPlayer = 1
+            player2Score = player2Score + 1
+            ball:reset()
+            gameState = "serve"
+        end
+
+        if ball.x > VIRTUAL_WIDTH then
+            servingPlayer = 2
+            player1Score = player1Score + 1
+            ball:reset()
+            gameState = "serve"
         end
     end
 
